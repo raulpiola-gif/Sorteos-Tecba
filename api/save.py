@@ -2,37 +2,7 @@ from http.server import BaseHTTPRequestHandler
 import json
 import os
 import time
-import base64
 import urllib.request
-
-
-def get_blob_token():
-    oidc_token = os.environ.get("VERCEL_OIDC_TOKEN")
-    if not oidc_token:
-        return None
-    creds = base64.b64encode(b"vercel-blob:").decode()
-    data = json.dumps({
-        "grant_type": "urn:ietf:params:oauth:grant-type:token-exchange",
-        "subject_token": oidc_token,
-        "subject_token_type": "urn:ietf:params:oauth:token-type:id_token",
-        "audience": "https://blob.vercel-storage.com"
-    }).encode()
-    req = urllib.request.Request(
-        "https://api.vercel.com/v2/oauth/token",
-        data=data,
-        headers={
-            "Content-Type": "application/json",
-            "Authorization": f"Basic {creds}"
-        },
-        method="POST"
-    )
-    resp = urllib.request.urlopen(req)
-    return json.loads(resp.read()).get("access_token")
-
-
-def get_store_url():
-    store_id = os.environ.get("BLOB_STORE_ID", "")
-    return f"https://{store_id}.blob.vercel-storage.com"
 
 
 class handler(BaseHTTPRequestHandler):
@@ -57,9 +27,11 @@ class handler(BaseHTTPRequestHandler):
             self._send_error(400, "Debe haber al menos un participante")
             return
 
-        blob_token = get_blob_token()
-        if not blob_token:
-            self._send_error(500, "No se pudo obtener el token de autenticacion")
+        supabase_url = os.environ.get("SUPABASE_URL")
+        supabase_key = os.environ.get("SUPABASE_ANON_KEY") or os.environ.get("SUPABASE_PUBLISHABLE_KEY")
+
+        if not supabase_url or not supabase_key:
+            self._send_error(500, "Supabase no configurado")
             return
 
         slug = name.lower().replace(" ", "-").replace("/", "-")
@@ -69,23 +41,22 @@ class handler(BaseHTTPRequestHandler):
         raffle = {
             "id": raffle_id,
             "name": name,
-            "participants": participants,
-            "numberOfWinners": number_of_winners,
-            "createdAt": int(time.time() * 1000),
+            "participants": json.dumps(participants),
+            "number_of_winners": number_of_winners,
+            "created_at": int(time.time() * 1000),
         }
 
         try:
-            store_url = get_store_url()
-            put_data = json.dumps(raffle).encode()
             req = urllib.request.Request(
-                f"{store_url}/raffles/{raffle_id}.json",
-                data=put_data,
+                f"{supabase_url}/rest/v1/sorteos",
+                data=json.dumps(raffle).encode(),
                 headers={
-                    "Authorization": f"Bearer {blob_token}",
+                    "apikey": supabase_key,
+                    "Authorization": f"Bearer {supabase_key}",
                     "Content-Type": "application/json",
-                    "x-api-blob-access": "public"
+                    "Prefer": "return=representation",
                 },
-                method="PUT"
+                method="POST",
             )
             urllib.request.urlopen(req)
 

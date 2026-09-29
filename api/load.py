@@ -1,38 +1,8 @@
 from http.server import BaseHTTPRequestHandler
 import json
 import os
-import base64
 import urllib.request
 from urllib.parse import urlparse, parse_qs
-
-
-def get_blob_token():
-    oidc_token = os.environ.get("VERCEL_OIDC_TOKEN")
-    if not oidc_token:
-        return None
-    creds = base64.b64encode(b"vercel-blob:").decode()
-    data = json.dumps({
-        "grant_type": "urn:ietf:params:oauth:grant-type:token-exchange",
-        "subject_token": oidc_token,
-        "subject_token_type": "urn:ietf:params:oauth:token-type:id_token",
-        "audience": "https://blob.vercel-storage.com"
-    }).encode()
-    req = urllib.request.Request(
-        "https://api.vercel.com/v2/oauth/token",
-        data=data,
-        headers={
-            "Content-Type": "application/json",
-            "Authorization": f"Basic {creds}"
-        },
-        method="POST"
-    )
-    resp = urllib.request.urlopen(req)
-    return json.loads(resp.read()).get("access_token")
-
-
-def get_store_url():
-    store_id = os.environ.get("BLOB_STORE_ID", "")
-    return f"https://{store_id}.blob.vercel-storage.com"
 
 
 class handler(BaseHTTPRequestHandler):
@@ -54,24 +24,48 @@ class handler(BaseHTTPRequestHandler):
             self.wfile.write(b"Se requiere un id")
             return
 
-        blob_token = get_blob_token()
-        if not blob_token:
+        supabase_url = os.environ.get("SUPABASE_URL")
+        supabase_key = os.environ.get("SUPABASE_ANON_KEY") or os.environ.get("SUPABASE_PUBLISHABLE_KEY")
+
+        if not supabase_url or not supabase_key:
             self.send_response(500)
             self.send_header("Content-Type", "text/plain")
             self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
-            self.wfile.write(b"No se pudo obtener el token")
+            self.wfile.write(b"Supabase no configurado")
             return
 
         try:
-            store_url = get_store_url()
             req = urllib.request.Request(
-                f"{store_url}/raffles/{raffle_id}.json",
-                headers={"Authorization": f"Bearer {blob_token}"},
-                method="GET"
+                f"{supabase_url}/rest/v1/sorteos?id=eq.{raffle_id}&select=*",
+                headers={
+                    "apikey": supabase_key,
+                    "Authorization": f"Bearer {supabase_key}",
+                },
             )
             resp = urllib.request.urlopen(req)
-            raffle = json.loads(resp.read())
+            rows = json.loads(resp.read())
+
+            if not rows:
+                self.send_response(404)
+                self.send_header("Content-Type", "text/plain")
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.end_headers()
+                self.wfile.write(b"Sorteo no encontrado")
+                return
+
+            r = rows[0]
+            participants = r.get("participants", "[]")
+            if isinstance(participants, str):
+                participants = json.loads(participants)
+
+            raffle = {
+                "id": r["id"],
+                "name": r["name"],
+                "participants": participants,
+                "numberOfWinners": r.get("number_of_winners", 1),
+                "createdAt": r.get("created_at", 0),
+            }
 
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
