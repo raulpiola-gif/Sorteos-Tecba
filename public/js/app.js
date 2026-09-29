@@ -243,12 +243,7 @@ class RaffleApp {
 
             // Strip RTF header and extract plain text
             if (text.trimStart().startsWith('{\\rtf')) {
-                text = text
-                    .replace(/\{\\[^{}]*\}/g, '')
-                    .replace(/\\[a-z]+\d*\s?/gi, '')
-                    .replace(/[{}\\]/g, '')
-                    .replace(/\s+/g, ' ')
-                    .trim();
+                text = this._parseRtf(text);
             }
 
             const names = text
@@ -256,7 +251,6 @@ class RaffleApp {
                 .map(n => n.trim())
                 .filter(n => n.length > 1 && n.length <= 50)
                 .map(n => {
-                    // Remove non-printable chars but keep accented chars
                     return n.replace(/[^\x20-\x7E\u00C0-\u024F]/g, '');
                 })
                 .filter(n => n.length > 1);
@@ -287,6 +281,115 @@ class RaffleApp {
         };
         reader.readAsText(file, 'UTF-8');
         event.target.value = '';
+    }
+
+    _parseRtf(rtf) {
+        let result = '';
+        let i = 0;
+        let inControlWord = false;
+        let controlWord = '';
+
+        while (i < rtf.length) {
+            const ch = rtf[i];
+
+            if (ch === '{') {
+                i++;
+                continue;
+            }
+
+            if (ch === '}') {
+                i++;
+                continue;
+            }
+
+            if (ch === '\\' && rtf[i + 1] === '\\') {
+                result += '\\';
+                i += 2;
+                continue;
+            }
+
+            if (ch === '\\' && /[a-zA-Z]/.test(rtf[i + 1] || '')) {
+                i++;
+                let word = '';
+                while (i < rtf.length && /[a-zA-Z]/.test(rtf[i])) {
+                    word += rtf[i];
+                    i++;
+                }
+                // Skip numeric parameter
+                if (i < rtf.length && (rtf[i] === '-' || /[0-9]/.test(rtf[i]))) {
+                    if (rtf[i] === '-') i++;
+                    while (i < rtf.length && /[0-9]/.test(rtf[i])) i++;
+                }
+                // Handle special commands
+                if (word === 'par' || word === 'tab' || word === 'line') {
+                    result += '\n';
+                } else if (word === 'space') {
+                    result += ' ';
+                } else if (word === 'uc' || word === 'uc0') {
+                    // Skip unicode count
+                } else if (word[0] === 'u' && word.length > 1) {
+                    // Unicode escape: \uN? - read the char
+                    const code = parseInt(word.substring(1));
+                    if (code > 0) {
+                        result += String.fromCharCode(code);
+                    }
+                    // Skip the ? placeholder
+                    if (rtf[i] === '?') i++;
+                } else if (word === 'tab') {
+                    result += '\t';
+                }
+                i++;
+                continue;
+            }
+
+            if (ch === '\\' && rtf[i + 1] === '\'') {
+                // Hex escape: \'XX
+                i += 2;
+                const hex = rtf.substring(i, i + 2);
+                i += 2;
+                const code = parseInt(hex, 16);
+                if (!isNaN(code) && code > 0) {
+                    result += String.fromCharCode(code);
+                }
+                continue;
+            }
+
+            if (ch === '\\' && rtf[i + 1] === '~') {
+                result += '\u00A0';
+                i += 2;
+                continue;
+            }
+
+            if (ch === '\\' && rtf[i + 1] === '-') {
+                i += 2;
+                continue;
+            }
+
+            if (ch === '\\' && rtf[i + 1] === '\\') {
+                result += '\\';
+                i += 2;
+                continue;
+            }
+
+            // Skip unknown control words
+            if (ch === '\\') {
+                i += 2;
+                continue;
+            }
+
+            // Regular text character
+            if (ch !== '\r' && ch !== '\n') {
+                result += ch;
+            } else {
+                result += '\n';
+            }
+            i++;
+        }
+
+        return result
+            .replace(/\n{3,}/g, '\n\n')
+            .replace(/[ \t]+/g, ' ')
+            .trim();
     }
 
     updateMicUI(isRecording) {
@@ -576,9 +679,9 @@ class RaffleApp {
         document.body.appendChild(container);
 
         const colors = [
-            '#7EDCD5', '#F5C518', '#FFFFFF', '#5BBFB5', '#E6B800',
-            '#A3E4DE', '#FFD84D', '#4DA8A0', '#F0D060', '#CCEAE5',
-            '#FFFFFF', '#7EDCD5', '#F5C518', '#8ED8D0', '#FFE066'
+            '#009688', '#E88700', '#035C80', '#FFFFFF', '#00769A',
+            '#007B6F', '#FF9500', '#2F7499', '#CB3232', '#67A5CD',
+            '#FFFFFF', '#009688', '#E88700', '#00ABDE', '#00642F'
         ];
         const shapes = ['circle', 'rect', 'line'];
 
@@ -664,15 +767,13 @@ class RaffleApp {
                 this.currentRaffleId = data.id;
                 this.raffleNameInput.value = '';
                 this.loadRafflesList();
-                this.saveBtn.disabled = false;
             } else {
                 alert(data.error || 'Error al guardar');
-                this.saveBtn.disabled = false;
             }
         } catch (err) {
-            alert('Error al conectar con el servidor');
-            this.saveBtn.disabled = false;
+            alert('Error al conectar con el servidor. Verifica que Vercel KV este configurado.');
         }
+        this.saveBtn.disabled = false;
     }
 
     async loadRafflesList() {
