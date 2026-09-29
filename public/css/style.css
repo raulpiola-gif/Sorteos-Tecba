@@ -30,9 +30,9 @@
     --input-border: rgba(255, 255, 255, 0.15);
     --input-focus: rgba(102, 126, 234, 0.6);
     --odometer-bg: #0a0a14;
-    --odometer-border: rgba(0, 255, 136, 0.25);
+    --odometer-border: rgba(0, 191, 255, 0.25);
     --font-main: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    --font-digital: 'Orbitron', monospace;
+    --font-digital: 'Montserrat', sans-serif;
     --radius-sm: 8px;
     --radius-md: 12px;
     --radius-lg: 20px;
@@ -147,17 +147,6 @@ body {
 .header {
     text-align: center;
     margin-bottom: 28px;
-}
-
-.header-icon {
-    font-size: 3rem;
-    margin-bottom: 8px;
-    animation: bounce 2s ease infinite;
-}
-
-@keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-8px); }
 }
 
 .header h1 {
@@ -624,10 +613,10 @@ body {
     align-items: center;
     justify-content: center;
     font-family: var(--font-digital);
-    font-size: 1.1rem;
-    font-weight: 500;
-    color: rgba(0, 255, 136, 0.35);
-    text-shadow: 0 0 8px rgba(0, 255, 136, 0.2);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.5);
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.15);
     padding: 0 20px;
     white-space: nowrap;
     overflow: hidden;
@@ -636,34 +625,35 @@ body {
 
 .odometer-item.above,
 .odometer-item.below {
-    filter: blur(4px);
-    opacity: 0.3;
-    transform: scale(0.9);
+    filter: blur(5px);
+    opacity: 0.2;
+    transform: scale(0.88);
 }
 
 .odometer-item.center {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: var(--neon-green);
-    text-shadow: 0 0 15px var(--neon-glow);
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #ffffff;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
     filter: none;
     opacity: 1;
     transform: scale(1);
 }
 
 .odometer-item.winner {
-    color: #ffd700 !important;
+    color: #00bfff !important;
     font-weight: 900 !important;
-    font-size: 1.8rem !important;
+    font-size: 2.2rem !important;
     text-shadow:
-        0 0 10px #ffd700,
-        0 0 30px #ffd700,
-        0 0 60px rgba(255, 215, 0, 0.8),
-        0 0 100px rgba(255, 215, 0, 0.4) !important;
+        0 0 10px #00bfff,
+        0 0 30px #00bfff,
+        0 0 60px rgba(0, 191, 255, 0.7),
+        0 0 80px rgba(255, 255, 255, 0.3),
+        0 0 100px rgba(0, 191, 255, 0.4) !important;
     filter: none !important;
     opacity: 1 !important;
     transform: scale(1) !important;
-    animation: winnerExplosion 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), winnerGlow 2s ease-in-out infinite 0.6s;
+    animation: winnerExplosion 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), winnerGlowBlue 2s ease-in-out infinite 0.6s;
 }
 
 @keyframes winnerExplosion {
@@ -672,21 +662,23 @@ body {
     100% { transform: scale(1); opacity: 1; }
 }
 
-@keyframes winnerGlow {
+@keyframes winnerGlowBlue {
     0%, 100% {
         text-shadow:
-            0 0 10px #ffd700,
-            0 0 30px #ffd700,
-            0 0 60px rgba(255, 215, 0, 0.8),
-            0 0 100px rgba(255, 215, 0, 0.4);
+            0 0 10px #00bfff,
+            0 0 30px #00bfff,
+            0 0 60px rgba(0, 191, 255, 0.7),
+            0 0 80px rgba(255, 255, 255, 0.3),
+            0 0 100px rgba(0, 191, 255, 0.4);
         transform: scale(1);
     }
     50% {
         text-shadow:
-            0 0 15px #ffd700,
-            0 0 40px #ffd700,
-            0 0 80px rgba(255, 215, 0, 0.9),
-            0 0 120px rgba(255, 215, 0, 0.5);
+            0 0 15px #00bfff,
+            0 0 40px #00bfff,
+            0 0 80px rgba(0, 191, 255, 0.9),
+            0 0 100px rgba(255, 255, 255, 0.5),
+            0 0 130px rgba(0, 191, 255, 0.5);
         transform: scale(1.08);
     }
 }
@@ -696,9 +688,9 @@ body {
    ============================================ */
 .result-section {
     text-align: center;
-    padding: 20px;
-    background: rgba(255, 215, 0, 0.05);
-    border: 1.5px solid rgba(255, 215, 0, 0.2);
+    padding: 24px;
+    background: linear-gradient(135deg, rgba(0, 191, 255, 0.06), rgba(255, 255, 255, 0.02));
+    border: 1.5px solid rgba(0, 191, 255, 0.2);
     border-radius: var(--radius-lg);
     animation: resultReveal 0.6s ease-out;
 }
@@ -734,7 +726,7 @@ body {
     font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 2px;
-    color: var(--gold);
+    color: #00bfff;
 }
 
 .result-winners {
@@ -744,19 +736,44 @@ body {
 }
 
 .winner-name {
-    font-size: 1.6rem;
-    font-weight: 900;
-    color: #ffd700;
+    font-size: 2rem;
+    font-weight: 800;
+    color: #00bfff;
     text-shadow:
-        0 0 15px #ffd700,
-        0 0 40px rgba(255, 215, 0, 0.6),
-        0 0 80px rgba(255, 215, 0, 0.3);
-    padding: 16px 24px;
-    background: linear-gradient(135deg, rgba(255, 215, 0, 0.12), rgba(255, 215, 0, 0.03));
-    border: 1.5px solid rgba(255, 215, 0, 0.3);
+        0 0 10px #00bfff,
+        0 0 30px rgba(0, 191, 255, 0.6),
+        0 0 60px rgba(255, 255, 255, 0.2);
+    padding: 20px 28px;
+    background: linear-gradient(135deg, rgba(0, 191, 255, 0.1), rgba(255, 255, 255, 0.03));
+    border: 1.5px solid rgba(0, 191, 255, 0.3);
     border-radius: var(--radius-lg);
-    box-shadow: 0 0 30px rgba(255, 215, 0, 0.15);
+    box-shadow:
+        0 0 30px rgba(0, 191, 255, 0.15),
+        inset 0 0 20px rgba(255, 255, 255, 0.02);
     animation: winnerCardReveal 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) backwards;
+    position: relative;
+    overflow: hidden;
+}
+
+.winner-name::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        45deg,
+        transparent 30%,
+        rgba(255, 255, 255, 0.08) 50%,
+        transparent 70%
+    );
+    animation: silverSheen 3s ease-in-out infinite;
+}
+
+@keyframes silverSheen {
+    0% { transform: translateX(-100%) rotate(45deg); }
+    100% { transform: translateX(100%) rotate(45deg); }
 }
 
 .winner-name:nth-child(1) { animation-delay: 0.1s; }
