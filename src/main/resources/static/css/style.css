@@ -1,0 +1,855 @@
+/* ============================================
+   BASE & RESET
+   ============================================ */
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --bg-primary: #0f0c29;
+    --bg-secondary: #302b63;
+    --bg-tertiary: #24243e;
+    --glass-bg: rgba(255, 255, 255, 0.06);
+    --glass-border: rgba(255, 255, 255, 0.12);
+    --glass-shadow: rgba(0, 0, 0, 0.3);
+    --text-primary: #ffffff;
+    --text-secondary: rgba(255, 255, 255, 0.6);
+    --accent-1: #667eea;
+    --accent-2: #764ba2;
+    --accent-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --neon-green: #00ff88;
+    --neon-glow: rgba(0, 255, 136, 0.3);
+    --gold: #ffd700;
+    --gold-glow: rgba(255, 215, 0, 0.6);
+    --danger: #f5576c;
+    --tag-bg: rgba(255, 255, 255, 0.08);
+    --tag-hover: rgba(255, 255, 255, 0.15);
+    --input-bg: rgba(255, 255, 255, 0.06);
+    --input-border: rgba(255, 255, 255, 0.15);
+    --input-focus: rgba(102, 126, 234, 0.6);
+    --odometer-bg: #0a0a14;
+    --odometer-border: rgba(0, 255, 136, 0.25);
+    --font-main: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-digital: 'Orbitron', monospace;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    --radius-xl: 24px;
+}
+
+body {
+    font-family: var(--font-main);
+    background: linear-gradient(-45deg, var(--bg-primary), var(--bg-secondary), var(--bg-tertiary), var(--bg-primary));
+    background-size: 400% 400%;
+    animation: gradientShift 20s ease infinite;
+    min-height: 100vh;
+    color: var(--text-primary);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 40px 20px;
+    overflow-x: hidden;
+}
+
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* ============================================
+   BACKGROUND SHAPES
+   ============================================ */
+.bg-shapes {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+}
+
+.shape {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.3;
+}
+
+.shape-1 {
+    width: 400px;
+    height: 400px;
+    background: var(--accent-1);
+    top: -100px;
+    right: -100px;
+    animation: float1 15s ease-in-out infinite;
+}
+
+.shape-2 {
+    width: 300px;
+    height: 300px;
+    background: var(--accent-2);
+    bottom: -50px;
+    left: -50px;
+    animation: float2 18s ease-in-out infinite;
+}
+
+.shape-3 {
+    width: 250px;
+    height: 250px;
+    background: #f093fb;
+    top: 50%;
+    left: 50%;
+    animation: float3 12s ease-in-out infinite;
+}
+
+@keyframes float1 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-50px, 50px) scale(1.1); }
+}
+
+@keyframes float2 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(30px, -40px) scale(1.15); }
+}
+
+@keyframes float3 {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); }
+    50% { transform: translate(-40%, -60%) scale(0.9); }
+}
+
+/* ============================================
+   CONTAINER & HEADER
+   ============================================ */
+.container {
+    width: 100%;
+    max-width: 520px;
+    position: relative;
+    z-index: 1;
+    animation: fadeInUp 0.8s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+.header-icon {
+    font-size: 3rem;
+    margin-bottom: 8px;
+    animation: bounce 2s ease infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+.header h1 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.7) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.subtitle {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-top: 6px;
+    font-weight: 300;
+}
+
+/* ============================================
+   GLASS CARD
+   ============================================ */
+.glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-xl);
+    padding: 32px 28px;
+    box-shadow:
+        0 8px 32px var(--glass-shadow),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.main-card {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* ============================================
+   SECTION LABELS
+   ============================================ */
+.section-label {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.section-header .section-label {
+    margin-bottom: 0;
+}
+
+.badge {
+    background: var(--accent-gradient);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 2px 10px;
+    border-radius: 20px;
+    min-width: 28px;
+    text-align: center;
+}
+
+/* ============================================
+   INPUT SECTION
+   ============================================ */
+.input-row {
+    display: flex;
+    gap: 10px;
+}
+
+.text-input {
+    flex: 1;
+    background: var(--input-bg);
+    border: 1.5px solid var(--input-border);
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
+    color: var(--text-primary);
+    font-family: var(--font-main);
+    font-size: 0.95rem;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.text-input::placeholder {
+    color: var(--text-secondary);
+}
+
+.text-input:focus {
+    border-color: var(--input-focus);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* ============================================
+   MICROPHONE BUTTON
+   ============================================ */
+.btn-mic {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    border-radius: 50%;
+    background: var(--input-bg);
+    border: 1.5px solid var(--input-border);
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.btn-mic:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: var(--accent-1);
+    color: var(--text-primary);
+}
+
+.btn-mic.recording {
+    background: rgba(245, 87, 108, 0.2);
+    border-color: var(--danger);
+    color: var(--danger);
+    animation: recordingPulse 1.2s ease-in-out infinite;
+    box-shadow: 0 0 25px rgba(245, 87, 108, 0.4);
+}
+
+.btn-mic.success {
+    background: rgba(0, 255, 136, 0.2);
+    border-color: var(--neon-green);
+    color: var(--neon-green);
+    box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+}
+
+.mic-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.mic-status {
+    position: absolute;
+    bottom: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.6rem;
+    color: var(--danger);
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.btn-mic.recording .mic-status {
+    opacity: 1;
+}
+
+@keyframes recordingPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(245, 87, 108, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 0 14px rgba(245, 87, 108, 0);
+    }
+}
+
+/* ============================================
+   BUTTONS
+   ============================================ */
+.btn {
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-family: var(--font-main);
+    font-weight: 600;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn:active {
+    transform: scale(0.96);
+}
+
+.btn-add {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--accent-gradient);
+    color: white;
+    padding: 12px 20px;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.btn-add:hover {
+    box-shadow: 0 6px 25px rgba(102, 126, 234, 0.5);
+    transform: translateY(-1px);
+}
+
+.btn-icon {
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+/* Number Control */
+.number-control {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
+
+.btn-number {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--input-bg);
+    border: 1.5px solid var(--input-border);
+    color: var(--text-primary);
+    font-size: 1.3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-number:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: var(--accent-1);
+    box-shadow: 0 0 15px rgba(102, 126, 234, 0.2);
+}
+
+.btn-number:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.number-display {
+    font-family: var(--font-digital);
+    font-size: 2rem;
+    font-weight: 700;
+    min-width: 50px;
+    text-align: center;
+    color: var(--text-primary);
+}
+
+/* Raffle Button */
+.btn-raffle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 16px;
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+    background: var(--accent-gradient);
+    color: white;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 6px 25px rgba(102, 126, 234, 0.35);
+}
+
+.btn-raffle:hover:not(:disabled) {
+    box-shadow: 0 8px 35px rgba(102, 126, 234, 0.55);
+    transform: translateY(-2px);
+}
+
+.btn-raffle:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-raffle.spinning {
+    animation: pulse 1s ease infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { box-shadow: 0 6px 25px rgba(102, 126, 234, 0.35); }
+    50% { box-shadow: 0 6px 40px rgba(102, 126, 234, 0.6); }
+}
+
+.btn-raffle-icon {
+    font-size: 1.4rem;
+}
+
+/* Clear Button */
+.btn-clear {
+    width: 100%;
+    padding: 12px;
+    background: transparent;
+    border: 1.5px solid var(--input-border);
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    border-radius: var(--radius-md);
+}
+
+.btn-clear:hover {
+    background: rgba(245, 87, 108, 0.1);
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+/* ============================================
+   TAGS (Participants)
+   ============================================ */
+.tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    min-height: 40px;
+    padding: 4px;
+}
+
+.empty-message {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-style: italic;
+    width: 100%;
+    text-align: center;
+    padding: 12px 0;
+}
+
+.tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--tag-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 30px;
+    padding: 6px 14px;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    animation: tagIn 0.3s ease-out;
+    transition: all 0.2s ease;
+    cursor: default;
+}
+
+.tag:hover {
+    background: var(--tag-hover);
+}
+
+.tag-name {
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: background 0.2s ease;
+}
+
+.tag-name:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.tag-edit-input {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1.5px solid var(--accent-1);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-family: var(--font-main);
+    font-size: 0.85rem;
+    padding: 2px 6px;
+    outline: none;
+    width: 120px;
+    box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+}
+
+@keyframes tagIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.tag-remove {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(245, 87, 108, 0.2);
+    color: var(--danger);
+    font-size: 0.75rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    line-height: 1;
+}
+
+.tag-remove:hover {
+    background: var(--danger);
+    color: white;
+    transform: scale(1.1);
+}
+
+/* ============================================
+   ODOMETER
+   ============================================ */
+.odometer-section {
+    display: none;
+}
+
+.odometer-section.visible {
+    display: block;
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.odometer-display {
+    position: relative;
+    background: var(--odometer-bg);
+    border: 2px solid var(--odometer-border);
+    border-radius: var(--radius-lg);
+    height: 192px;
+    overflow: hidden;
+    box-shadow:
+        inset 0 4px 30px rgba(0, 0, 0, 0.5),
+        0 0 40px var(--neon-glow);
+}
+
+.odometer-overlay {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 64px;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.odometer-overlay.top {
+    top: 0;
+    background: linear-gradient(to bottom, var(--odometer-bg) 0%, transparent 100%);
+}
+
+.odometer-overlay.bottom {
+    bottom: 0;
+    background: linear-gradient(to top, var(--odometer-bg) 0%, transparent 100%);
+}
+
+.odometer-viewport {
+    position: relative;
+    transition: transform 0.08s linear;
+}
+
+.odometer-item {
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-digital);
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: rgba(0, 255, 136, 0.35);
+    text-shadow: 0 0 8px rgba(0, 255, 136, 0.2);
+    padding: 0 20px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.odometer-item.above,
+.odometer-item.below {
+    filter: blur(4px);
+    opacity: 0.3;
+    transform: scale(0.9);
+}
+
+.odometer-item.center {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--neon-green);
+    text-shadow: 0 0 15px var(--neon-glow);
+    filter: none;
+    opacity: 1;
+    transform: scale(1);
+}
+
+.odometer-item.winner {
+    color: #ffd700 !important;
+    font-weight: 900 !important;
+    font-size: 1.8rem !important;
+    text-shadow:
+        0 0 10px #ffd700,
+        0 0 30px #ffd700,
+        0 0 60px rgba(255, 215, 0, 0.8),
+        0 0 100px rgba(255, 215, 0, 0.4) !important;
+    filter: none !important;
+    opacity: 1 !important;
+    transform: scale(1) !important;
+    animation: winnerExplosion 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), winnerGlow 2s ease-in-out infinite 0.6s;
+}
+
+@keyframes winnerExplosion {
+    0% { transform: scale(0.3); opacity: 0; }
+    50% { transform: scale(1.4); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes winnerGlow {
+    0%, 100% {
+        text-shadow:
+            0 0 10px #ffd700,
+            0 0 30px #ffd700,
+            0 0 60px rgba(255, 215, 0, 0.8),
+            0 0 100px rgba(255, 215, 0, 0.4);
+        transform: scale(1);
+    }
+    50% {
+        text-shadow:
+            0 0 15px #ffd700,
+            0 0 40px #ffd700,
+            0 0 80px rgba(255, 215, 0, 0.9),
+            0 0 120px rgba(255, 215, 0, 0.5);
+        transform: scale(1.08);
+    }
+}
+
+/* ============================================
+   RESULT SECTION
+   ============================================ */
+.result-section {
+    text-align: center;
+    padding: 20px;
+    background: rgba(255, 215, 0, 0.05);
+    border: 1.5px solid rgba(255, 215, 0, 0.2);
+    border-radius: var(--radius-lg);
+    animation: resultReveal 0.6s ease-out;
+}
+
+.result-section.hidden {
+    display: none;
+}
+
+@keyframes resultReveal {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.result-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.result-icon {
+    font-size: 1.5rem;
+}
+
+.result-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: var(--gold);
+}
+
+.result-winners {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.winner-name {
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: #ffd700;
+    text-shadow:
+        0 0 15px #ffd700,
+        0 0 40px rgba(255, 215, 0, 0.6),
+        0 0 80px rgba(255, 215, 0, 0.3);
+    padding: 16px 24px;
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.12), rgba(255, 215, 0, 0.03));
+    border: 1.5px solid rgba(255, 215, 0, 0.3);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.15);
+    animation: winnerCardReveal 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) backwards;
+}
+
+.winner-name:nth-child(1) { animation-delay: 0.1s; }
+.winner-name:nth-child(2) { animation-delay: 0.2s; }
+.winner-name:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes winnerCardReveal {
+    0% { transform: scale(0.3) rotate(-5deg); opacity: 0; }
+    60% { transform: scale(1.1) rotate(1deg); }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+/* ============================================
+   CONFETTI
+   ============================================ */
+.confetti-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 100;
+    overflow: hidden;
+}
+
+.confetti {
+    position: absolute;
+    opacity: 0;
+    animation: confettiFall var(--fall-duration, 3s) ease-out forwards;
+}
+
+.confetti.circle { border-radius: 50%; }
+.confetti.rect { border-radius: 2px; }
+.confetti.line {
+    width: 3px !important;
+    border-radius: 2px;
+}
+
+@keyframes confettiFall {
+    0% {
+        opacity: 1;
+        transform: translateY(-30px) rotate(0deg) scale(1);
+    }
+    25% {
+        transform: translateY(25vh) rotate(180deg) translateX(30px) scale(1);
+    }
+    50% {
+        transform: translateY(50vh) rotate(360deg) translateX(-20px) scale(0.9);
+    }
+    75% {
+        transform: translateY(75vh) rotate(540deg) translateX(15px) scale(0.7);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(105vh) rotate(720deg) translateX(-10px) scale(0.4);
+    }
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 560px) {
+    body {
+        padding: 20px 12px;
+    }
+
+    .header h1 {
+        font-size: 1.2rem;
+    }
+
+    .glass-card {
+        padding: 24px 18px;
+    }
+
+    .btn-add .btn-text {
+        display: none;
+    }
+
+    .btn-add {
+        padding: 12px 14px;
+    }
+
+    .odometer-display {
+        height: 160px;
+    }
+
+    .odometer-item {
+        height: 53px;
+    }
+
+    .odometer-item.above,
+    .odometer-item.below {
+        height: 53px;
+    }
+}
