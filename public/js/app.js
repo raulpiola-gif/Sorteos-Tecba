@@ -107,7 +107,7 @@ class VoiceInput {
             this.processing = true;
             const transcript = result[0].transcript.trim();
             if (transcript) {
-                this.cooldownUntil = Date.now() + 1500;
+                this.cooldownUntil = Date.now() + 300;
                 this.onResult(transcript);
             }
         };
@@ -178,6 +178,7 @@ class RaffleApp {
         this.resultSection = document.getElementById('resultSection');
         this.resultWinners = document.getElementById('resultWinners');
         this.clearBtn = document.getElementById('clearBtn');
+        this.csvInput = document.getElementById('csvInput');
 
         this.addBtn.addEventListener('click', () => this.addParticipant());
         this.nameInput.addEventListener('keydown', (e) => {
@@ -187,6 +188,7 @@ class RaffleApp {
         this.increaseBtn.addEventListener('click', () => this.changeWinners(1));
         this.raffleBtn.addEventListener('click', () => this.startRaffle());
         this.clearBtn.addEventListener('click', () => this.clearAll());
+        this.csvInput.addEventListener('change', (e) => this.handleCsvImport(e));
 
         this.voiceInput = new VoiceInput(
             (transcript) => this.handleVoiceResult(transcript),
@@ -205,6 +207,7 @@ class RaffleApp {
     handleVoiceResult(transcript) {
         const name = transcript.trim();
         if (name.length < 1 || name.length > 50) return;
+        if (this.participants.length >= 100) return;
         if (this.participants.includes(name)) return;
 
         this.participants.push(name);
@@ -213,6 +216,46 @@ class RaffleApp {
 
         this.micBtn.classList.add('success');
         setTimeout(() => this.micBtn.classList.remove('success'), 600);
+    }
+
+    handleCsvImport(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const text = e.target.result;
+            const names = text
+                .split(/[\n\r]+/)
+                .map(n => n.replace(/;/g, ',').split(',')[0].trim())
+                .filter(n => n.length > 1 && n.length <= 50);
+
+            const MAX = 100;
+            let added = 0;
+            let skipped = 0;
+
+            for (const name of names) {
+                if (this.participants.length >= MAX) break;
+                if (this.participants.includes(name)) {
+                    skipped++;
+                    continue;
+                }
+                this.participants.push(name);
+                added++;
+            }
+
+            this.renderTags();
+            this.updateUI();
+
+            if (skipped > 0 || added < names.length) {
+                const msg = added + " agregados" +
+                    (skipped > 0 ? ", " + skipped + " duplicados" : "") +
+                    (names.length > MAX ? ". Maximo " + MAX + " participantes." : "");
+                alert(msg);
+            }
+        };
+        reader.readAsText(file);
+        event.target.value = '';
     }
 
     updateMicUI(isRecording) {
@@ -228,6 +271,10 @@ class RaffleApp {
     addParticipant() {
         const name = this.nameInput.value.trim();
         if (!name) return;
+        if (this.participants.length >= 100) {
+            alert('Maximo 100 participantes');
+            return;
+        }
         if (this.participants.includes(name)) {
             this.nameInput.classList.add('shake');
             setTimeout(() => this.nameInput.classList.remove('shake'), 400);

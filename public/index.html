@@ -60,6 +60,18 @@
                 <div id="tagsContainer" class="tags-container">
                     <p class="empty-message" id="emptyMessage">Agrega participantes para comenzar</p>
                 </div>
+                <div class="import-row">
+                    <label class="btn btn-import" for="csvInput">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                        Importar lista
+                    </label>
+                    <input type="file" id="csvInput" accept=".csv,.txt,.xlsx,.xls" hidden>
+                    <span class="import-hint">CSV o TXT (un nombre por linea, max 100)</span>
+                </div>
             </section>
 
             <!-- Winners Config -->
