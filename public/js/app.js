@@ -188,7 +188,6 @@ class RaffleApp {
         this.raffleBtn.addEventListener('click', () => this.startRaffle());
         this.clearBtn.addEventListener('click', () => this.clearAll());
 
-        // Voice input setup
         this.voiceInput = new VoiceInput(
             (transcript) => this.handleVoiceResult(transcript),
             (isRecording) => this.updateMicUI(isRecording)
@@ -220,16 +219,6 @@ class RaffleApp {
         if (isRecording) {
             this.micBtn.classList.add('recording');
             this.micStatus.textContent = 'Habla...';
-        } else {
-            this.micBtn.classList.remove('recording');
-            this.micStatus.textContent = '';
-        }
-    }
-
-    updateMicUI(isRecording) {
-        if (isRecording) {
-            this.micBtn.classList.add('recording');
-            this.micStatus.textContent = 'Escuchando...';
         } else {
             this.micBtn.classList.remove('recording');
             this.micStatus.textContent = '';
@@ -343,17 +332,8 @@ class RaffleApp {
             this.maxWinners = 1;
         }
 
-        if (this.maxWinners <= 1) {
-            this.decreaseBtn.disabled = true;
-        } else {
-            this.decreaseBtn.disabled = false;
-        }
-
-        this.increaseBtn.disabled = this.participants.length === 0;
-
-        if (this.maxWinners <= 1) {
-            this.increaseBtn.disabled = true;
-        }
+        this.decreaseBtn.disabled = this.maxWinners <= 1;
+        this.increaseBtn.disabled = this.participants.length === 0 || this.maxWinners >= this.participants.length;
 
         if (this.participants.length === 0) {
             this.raffleBtn.disabled = true;
@@ -524,20 +504,17 @@ class RaffleApp {
         ];
         const shapes = ['circle', 'rect', 'line'];
 
-        // Wave 1: 120 particles
         for (let i = 0; i < 120; i++) {
-            this._spawnConfetti(container, colors, shapes, 0);
+            this._spawnConfetti(container, colors, shapes);
         }
-        // Wave 2: 60 particles with delay
         setTimeout(() => {
             for (let i = 0; i < 60; i++) {
-                this._spawnConfetti(container, colors, shapes, 0);
+                this._spawnConfetti(container, colors, shapes);
             }
         }, 400);
-        // Wave 3: 30 particles with more delay
         setTimeout(() => {
             for (let i = 0; i < 30; i++) {
-                this._spawnConfetti(container, colors, shapes, 0);
+                this._spawnConfetti(container, colors, shapes);
             }
         }, 800);
 
@@ -598,7 +575,6 @@ class RaffleApp {
     }
 }
 
-// Initialize app
 document.addEventListener('DOMContentLoaded', () => {
     new RaffleApp();
 });
