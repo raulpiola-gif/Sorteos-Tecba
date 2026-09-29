@@ -576,9 +576,9 @@ class RaffleApp {
         document.body.appendChild(container);
 
         const colors = [
-            '#ffd700', '#ff6b6b', '#667eea', '#00ff88', '#f093fb',
-            '#4ecdc4', '#ff9ff3', '#feca57', '#ff9f43', '#00d2d3',
-            '#ffffff', '#ff4757', '#7bed9f', '#70a1ff', '#ffa502'
+            '#7EDCD5', '#F5C518', '#FFFFFF', '#5BBFB5', '#E6B800',
+            '#A3E4DE', '#FFD84D', '#4DA8A0', '#F0D060', '#CCEAE5',
+            '#FFFFFF', '#7EDCD5', '#F5C518', '#8ED8D0', '#FFE066'
         ];
         const shapes = ['circle', 'rect', 'line'];
 
