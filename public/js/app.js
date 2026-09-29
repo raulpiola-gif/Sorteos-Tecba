@@ -704,7 +704,7 @@ class RaffleApp {
                 alert(data.error || 'Error al guardar');
             }
         } catch (err) {
-            alert('Error al conectar con el servidor. Verifica que Vercel KV este configurado.');
+            alert('Error al conectar con el servidor. Intenta de nuevo.');
         }
         this.saveBtn.disabled = false;
     }
