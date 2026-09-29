@@ -235,6 +235,7 @@ class RaffleApp {
         const reader = new FileReader();
         reader.onload = (e) => {
             let text = e.target.result;
+            console.log('Imported file length:', text.length, 'First 200 chars:', text.substring(0, 200));
 
             // Strip BOM
             if (text.charCodeAt(0) === 0xFEFF) {
@@ -284,112 +285,44 @@ class RaffleApp {
     }
 
     _parseRtf(rtf) {
-        let result = '';
-        let i = 0;
-        let inControlWord = false;
-        let controlWord = '';
+        // Step 1: Remove RTF header
+        let text = rtf.replace(/^\{\\rtf1\\ansi[^}]*\}/, '');
 
-        while (i < rtf.length) {
-            const ch = rtf[i];
+        // Step 2: Handle unicode escapes \uN? (where N is decimal, ? is placeholder)
+        text = text.replace(/\\u(\d+)\?/g, (match, code) => {
+            const num = parseInt(code);
+            // RTF uses signed 16-bit, values > 32767 are negative
+            return String.fromCharCode(num > 32767 ? num - 65536 : num);
+        });
 
-            if (ch === '{') {
-                i++;
-                continue;
-            }
+        // Step 3: Handle hex escapes \'XX
+        text = text.replace(/\\'([0-9a-fA-F]{2})/g, (match, hex) => {
+            return String.fromCharCode(parseInt(hex, 16));
+        });
 
-            if (ch === '}') {
-                i++;
-                continue;
-            }
+        // Step 4: Handle special RTF commands
+        text = text.replace(/\\par[sp]*/g, '\n');
+        text = text.replace(/\\line[sp]*/g, '\n');
+        text = text.replace(/\\tab[sp]*/g, '\t');
+        text = text.replace(/\\space[sp]*/g, ' ');
+        text = text.replace(/\\~[sp]*/g, '\u00A0');
+        text = text.replace(/\\-/g, '');
+        text = text.replace(/\\_/g, '');
 
-            if (ch === '\\' && rtf[i + 1] === '\\') {
-                result += '\\';
-                i += 2;
-                continue;
-            }
+        // Step 5: Remove all remaining control words \wordN
+        text = text.replace(/\\[a-zA-Z]+\d*\s?/g, '');
 
-            if (ch === '\\' && /[a-zA-Z]/.test(rtf[i + 1] || '')) {
-                i++;
-                let word = '';
-                while (i < rtf.length && /[a-zA-Z]/.test(rtf[i])) {
-                    word += rtf[i];
-                    i++;
-                }
-                // Skip numeric parameter
-                if (i < rtf.length && (rtf[i] === '-' || /[0-9]/.test(rtf[i]))) {
-                    if (rtf[i] === '-') i++;
-                    while (i < rtf.length && /[0-9]/.test(rtf[i])) i++;
-                }
-                // Handle special commands
-                if (word === 'par' || word === 'tab' || word === 'line') {
-                    result += '\n';
-                } else if (word === 'space') {
-                    result += ' ';
-                } else if (word === 'uc' || word === 'uc0') {
-                    // Skip unicode count
-                } else if (word[0] === 'u' && word.length > 1) {
-                    // Unicode escape: \uN? - read the char
-                    const code = parseInt(word.substring(1));
-                    if (code > 0) {
-                        result += String.fromCharCode(code);
-                    }
-                    // Skip the ? placeholder
-                    if (rtf[i] === '?') i++;
-                } else if (word === 'tab') {
-                    result += '\t';
-                }
-                i++;
-                continue;
-            }
+        // Step 6: Remove braces
+        text = text.replace(/[{}]/g, '');
 
-            if (ch === '\\' && rtf[i + 1] === '\'') {
-                // Hex escape: \'XX
-                i += 2;
-                const hex = rtf.substring(i, i + 2);
-                i += 2;
-                const code = parseInt(hex, 16);
-                if (!isNaN(code) && code > 0) {
-                    result += String.fromCharCode(code);
-                }
-                continue;
-            }
+        // Step 7: Remove single backslashes (remaining artifacts)
+        text = text.replace(/\\\\/g, '\\');
 
-            if (ch === '\\' && rtf[i + 1] === '~') {
-                result += '\u00A0';
-                i += 2;
-                continue;
-            }
+        // Step 8: Clean up whitespace
+        text = text.replace(/\n{3,}/g, '\n\n');
+        text = text.replace(/[ \t]+/g, ' ');
 
-            if (ch === '\\' && rtf[i + 1] === '-') {
-                i += 2;
-                continue;
-            }
-
-            if (ch === '\\' && rtf[i + 1] === '\\') {
-                result += '\\';
-                i += 2;
-                continue;
-            }
-
-            // Skip unknown control words
-            if (ch === '\\') {
-                i += 2;
-                continue;
-            }
-
-            // Regular text character
-            if (ch !== '\r' && ch !== '\n') {
-                result += ch;
-            } else {
-                result += '\n';
-            }
-            i++;
-        }
-
-        return result
-            .replace(/\n{3,}/g, '\n\n')
-            .replace(/[ \t]+/g, ' ')
-            .trim();
+        return text.trim();
     }
 
     updateMicUI(isRecording) {
