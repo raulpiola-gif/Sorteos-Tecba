@@ -464,6 +464,143 @@ body {
 }
 
 /* ============================================
+   SAVE
+   ============================================ */
+.save-section {
+    margin-top: 4px;
+}
+
+.save-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.save-row .text-input {
+    flex: 1;
+}
+
+.btn-save {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(102, 126, 234, 0.15);
+    border: 1.5px solid rgba(102, 126, 234, 0.3);
+    color: var(--accent-1);
+    padding: 10px 16px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: var(--radius-md);
+    white-space: nowrap;
+}
+
+.btn-save:hover {
+    background: rgba(102, 126, 234, 0.25);
+    border-color: var(--accent-1);
+}
+
+.btn-save:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* ============================================
+   PAST RAFFLES
+   ============================================ */
+.past-raffles {
+    margin-top: 20px;
+}
+
+.raffles-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.raffles-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.raffles-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.raffles-list::-webkit-scrollbar-thumb {
+    background: var(--glass-border);
+    border-radius: 2px;
+}
+
+.raffle-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.raffle-item:hover {
+    background: rgba(102, 126, 234, 0.08);
+    border-color: rgba(102, 126, 234, 0.3);
+}
+
+.raffle-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.raffle-item-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.raffle-item-meta {
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+}
+
+.raffle-item-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.btn-raffle-action {
+    background: transparent;
+    border: 1px solid var(--glass-border);
+    color: var(--text-secondary);
+    padding: 6px 10px;
+    font-size: 0.72rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-raffle-action.load {
+    border-color: rgba(102, 126, 234, 0.3);
+    color: var(--accent-1);
+}
+
+.btn-raffle-action.load:hover {
+    background: rgba(102, 126, 234, 0.15);
+}
+
+.btn-raffle-action.delete {
+    border-color: rgba(245, 87, 108, 0.3);
+    color: var(--danger);
+}
+
+.btn-raffle-action.delete:hover {
+    background: rgba(245, 87, 108, 0.15);
+}
+
+/* ============================================
    TAGS (Participants)
    ============================================ */
 .tags-container {
@@ -1032,6 +1169,33 @@ body {
     .btn-clear {
         padding: 10px;
         font-size: 0.8rem;
+    }
+
+    .save-row {
+        flex-direction: column;
+    }
+
+    .save-row .text-input {
+        width: 100%;
+    }
+
+    .btn-save {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .raffle-item {
+        flex-direction: column;
+        gap: 8px;
+        align-items: flex-start;
+    }
+
+    .raffle-item-actions {
+        width: 100%;
+    }
+
+    .btn-raffle-action {
+        flex: 1;
     }
 }
 

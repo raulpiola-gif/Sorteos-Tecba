@@ -1,23 +1,19 @@
 {
   "version": 2,
   "builds": [
-    {
-      "src": "api/raffle.py",
-      "use": "@vercel/python"
-    },
-    {
-      "src": "public/**",
-      "use": "@vercel/static"
-    }
+    { "src": "api/raffle.py", "use": "@vercel/python" },
+    { "src": "api/save.py", "use": "@vercel/python" },
+    { "src": "api/load.py", "use": "@vercel/python" },
+    { "src": "api/list.py", "use": "@vercel/python" },
+    { "src": "api/delete.py", "use": "@vercel/python" },
+    { "src": "public/**", "use": "@vercel/static" }
   ],
   "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/raffle.py"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/public/$1"
-    }
+    { "src": "/api/raffle", "dest": "/api/raffle.py" },
+    { "src": "/api/save", "dest": "/api/save.py" },
+    { "src": "/api/load", "dest": "/api/load.py" },
+    { "src": "/api/list", "dest": "/api/list.py" },
+    { "src": "/api/delete", "dest": "/api/delete.py" },
+    { "src": "/(.*)", "dest": "/public/$1" }
   ]
 }

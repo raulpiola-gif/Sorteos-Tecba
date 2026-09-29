@@ -179,6 +179,11 @@ class RaffleApp {
         this.resultWinners = document.getElementById('resultWinners');
         this.clearBtn = document.getElementById('clearBtn');
         this.csvInput = document.getElementById('csvInput');
+        this.saveBtn = document.getElementById('saveBtn');
+        this.raffleNameInput = document.getElementById('raffleNameInput');
+        this.rafflesList = document.getElementById('rafflesList');
+        this.raffleCount = document.getElementById('raffleCount');
+        this.currentRaffleId = null;
 
         this.addBtn.addEventListener('click', () => this.addParticipant());
         this.nameInput.addEventListener('keydown', (e) => {
@@ -189,6 +194,10 @@ class RaffleApp {
         this.raffleBtn.addEventListener('click', () => this.startRaffle());
         this.clearBtn.addEventListener('click', () => this.clearAll());
         this.csvInput.addEventListener('change', (e) => this.handleCsvImport(e));
+        this.saveBtn.addEventListener('click', () => this.saveRaffle());
+        this.raffleNameInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') this.saveRaffle();
+        });
 
         this.voiceInput = new VoiceInput(
             (transcript) => this.handleVoiceResult(transcript),
@@ -202,6 +211,7 @@ class RaffleApp {
         }
 
         this.nameInput.focus();
+        this.loadRafflesList();
     }
 
     handleVoiceResult(transcript) {
@@ -224,11 +234,32 @@ class RaffleApp {
 
         const reader = new FileReader();
         reader.onload = (e) => {
-            const text = e.target.result;
+            let text = e.target.result;
+
+            // Strip BOM
+            if (text.charCodeAt(0) === 0xFEFF) {
+                text = text.substring(1);
+            }
+
+            // Strip RTF header and extract plain text
+            if (text.trimStart().startsWith('{\\rtf')) {
+                text = text
+                    .replace(/\{\\[^{}]*\}/g, '')
+                    .replace(/\\[a-z]+\d*\s?/gi, '')
+                    .replace(/[{}\\]/g, '')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+            }
+
             const names = text
-                .split(/[\n\r]+/)
-                .map(n => n.replace(/;/g, ',').split(',')[0].trim())
-                .filter(n => n.length > 1 && n.length <= 50);
+                .split(/[\n\r;]+/)
+                .map(n => n.trim())
+                .filter(n => n.length > 1 && n.length <= 50)
+                .map(n => {
+                    // Remove non-printable chars but keep accented chars
+                    return n.replace(/[^\x20-\x7E\u00C0-\u024F]/g, '');
+                })
+                .filter(n => n.length > 1);
 
             const MAX = 100;
             let added = 0;
@@ -254,7 +285,7 @@ class RaffleApp {
                 alert(msg);
             }
         };
-        reader.readAsText(file);
+        reader.readAsText(file, 'UTF-8');
         event.target.value = '';
     }
 
@@ -603,10 +634,140 @@ class RaffleApp {
         }
     }
 
+    async saveRaffle() {
+        const name = this.raffleNameInput.value.trim();
+        if (!name) {
+            this.raffleNameInput.classList.add('shake');
+            setTimeout(() => this.raffleNameInput.classList.remove('shake'), 400);
+            return;
+        }
+        if (this.participants.length === 0) {
+            alert('Agrega participantes antes de guardar');
+            return;
+        }
+
+        this.saveBtn.disabled = true;
+
+        try {
+            const res = await fetch('/api/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name,
+                    participants: this.participants,
+                    numberOfWinners: this.maxWinners
+                })
+            });
+
+            const data = await res.json();
+            if (data.ok) {
+                this.currentRaffleId = data.id;
+                this.raffleNameInput.value = '';
+                this.loadRafflesList();
+                this.saveBtn.disabled = false;
+            } else {
+                alert(data.error || 'Error al guardar');
+                this.saveBtn.disabled = false;
+            }
+        } catch (err) {
+            alert('Error al conectar con el servidor');
+            this.saveBtn.disabled = false;
+        }
+    }
+
+    async loadRafflesList() {
+        try {
+            const res = await fetch('/api/list');
+            const data = await res.json();
+            const raffles = data.raffles || [];
+
+            this.raffleCount.textContent = raffles.length;
+
+            if (raffles.length === 0) {
+                this.rafflesList.innerHTML = '<p class="empty-message">No hay sorteos guardados</p>';
+                return;
+            }
+
+            this.rafflesList.innerHTML = '';
+            raffles.forEach(raffle => {
+                const item = document.createElement('div');
+                item.className = 'raffle-item';
+                const date = new Date(raffle.createdAt).toLocaleDateString('es-AR');
+                item.innerHTML = `
+                    <div class="raffle-item-info">
+                        <span class="raffle-item-name">${this.escapeHtml(raffle.name)}</span>
+                        <span class="raffle-item-meta">${raffle.participantCount} participantes · ${raffle.numberOfWinners} ganador(es) · ${date}</span>
+                    </div>
+                    <div class="raffle-item-actions">
+                        <button class="btn-raffle-action load" data-id="${raffle.id}" title="Cargar sorteo">Cargar</button>
+                        <button class="btn-raffle-action delete" data-id="${raffle.id}" title="Eliminar sorteo">X</button>
+                    </div>
+                `;
+                this.rafflesList.appendChild(item);
+            });
+
+            this.rafflesList.querySelectorAll('.btn-raffle-action.load').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.loadRaffle(btn.dataset.id);
+                });
+            });
+
+            this.rafflesList.querySelectorAll('.btn-raffle-action.delete').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.deleteRaffle(btn.dataset.id);
+                });
+            });
+        } catch (err) {
+            this.rafflesList.innerHTML = '<p class="empty-message">Error al cargar sorteos</p>';
+        }
+    }
+
+    async loadRaffle(id) {
+        try {
+            const res = await fetch('/api/load?id=' + encodeURIComponent(id));
+            if (!res.ok) {
+                alert('Sorteo no encontrado');
+                return;
+            }
+            const raffle = await res.json();
+
+            this.participants = raffle.participants || [];
+            this.maxWinners = raffle.numberOfWinners || 1;
+            this.currentRaffleId = raffle.id;
+            this.winnerCountDisplay.textContent = this.maxWinners;
+            this.raffleNameInput.value = raffle.name;
+
+            this.renderTags();
+            this.updateUI();
+            this.odometerSection.classList.remove('visible');
+            this.resultSection.classList.add('hidden');
+        } catch (err) {
+            alert('Error al cargar el sorteo');
+        }
+    }
+
+    async deleteRaffle(id) {
+        if (!confirm('Eliminar este sorteo guardado?')) return;
+
+        try {
+            await fetch('/api/delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id })
+            });
+            this.loadRafflesList();
+        } catch (err) {
+            alert('Error al eliminar');
+        }
+    }
+
     clearAll() {
         this.participants = [];
         this.maxWinners = 1;
         this.isAnimating = false;
+        this.currentRaffleId = null;
         this.winnerCountDisplay.textContent = '1';
         this.renderTags();
         this.updateUI();
