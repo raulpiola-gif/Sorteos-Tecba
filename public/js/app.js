@@ -275,7 +275,7 @@ class RaffleApp {
             .filter(n => /[aeiouáéíóú]/i.test(n))
             .filter(n => !/^\d+$/.test(n))
             .filter(n => {
-                const lower = n.toLowerCase();
+                const lower = n.toLowerCase().replace(/\d+$/, '');
                 const rtfGarbage = /^(par|pard|fi|li|sl|slmult|sa|fs|cf|highlight|rtlch|ltrch|ansicpg|deff0|nouicompat|viewkind4|uc1|rtf|ansi|charset|fswiss|froman|fmodern|fnil|helvetica|arial|times|courier|calibri|consolas|trebuchet|cambria|georgia|tahoma|verdana|impact|wingdings|symbol|webdings|irnatural|tightenfactor|dirnatural|trowd|trqr|trpaddl|trpaddr|trpaddft|trpaddfb|cellx|clvertalc|cltxbtlr|clvmgb|clvmgf|cell|row|nestcell|nestrow|fonttbl|stylesheet|colortbl|listtable|generator|blipuid|filetbl|header|footer|margl|margr|margt|margb|paperh|paperw|pgwsxn|pghsxn|marglsxn|margrsxn|margtsxn|margbsxn|landscape|sectd|headery|footery|ftnsep|ftnsepc|pgbrdr|brdrw|brdrcf)$/i;
                 return !rtfGarbage.test(lower);
             })
