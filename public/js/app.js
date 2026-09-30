@@ -232,56 +232,73 @@ class RaffleApp {
         const file = event.target.files[0];
         if (!file) return;
 
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            let text = e.target.result;
-            console.log('Imported file length:', text.length, 'First 200 chars:', text.substring(0, 200));
+        const ext = file.name.split('.').pop().toLowerCase();
 
-            // Strip BOM
-            if (text.charCodeAt(0) === 0xFEFF) {
-                text = text.substring(1);
-            }
-
-            // Strip RTF header and extract plain text
-            if (text.trimStart().startsWith('{\\rtf')) {
-                text = this._parseRtf(text);
-            }
-
-            const names = text
-                .split(/[\n\r;]+/)
-                .map(n => n.trim())
-                .filter(n => n.length > 1 && n.length <= 50)
-                .map(n => {
-                    return n.replace(/[^\x20-\x7E\u00C0-\u024F]/g, '');
-                })
-                .filter(n => n.length > 1);
-
-            const MAX = 100;
-            let added = 0;
-            let skipped = 0;
-
-            for (const name of names) {
-                if (this.participants.length >= MAX) break;
-                if (this.participants.includes(name)) {
-                    skipped++;
-                    continue;
+        if (ext === 'xlsx' || ext === 'xls') {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const csv = XLSX.utils.sheet_to_csv(firstSheet);
+                    this._processTextImport(csv);
+                } catch (err) {
+                    alert('Error al leer el archivo Excel: ' + err.message);
                 }
-                this.participants.push(name);
-                added++;
-            }
-
-            this.renderTags();
-            this.updateUI();
-
-            if (skipped > 0 || added < names.length) {
-                const msg = added + " agregados" +
-                    (skipped > 0 ? ", " + skipped + " duplicados" : "") +
-                    (names.length > MAX ? ". Maximo " + MAX + " participantes." : "");
-                alert(msg);
-            }
-        };
-        reader.readAsText(file, 'UTF-8');
+            };
+            reader.readAsArrayBuffer(file);
+        } else {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                let text = e.target.result;
+                if (text.charCodeAt(0) === 0xFEFF) {
+                    text = text.substring(1);
+                }
+                if (text.trimStart().startsWith('{\\rtf')) {
+                    text = this._parseRtf(text);
+                }
+                this._processTextImport(text);
+            };
+            reader.readAsText(file, 'UTF-8');
+        }
         event.target.value = '';
+    }
+
+    _processTextImport(text) {
+        const names = text
+            .split(/[\n\r;]+/)
+            .map(n => n.trim())
+            .filter(n => n.length > 1 && n.length <= 50)
+            .filter(n => /[a-zA-ZáéíóúñÁÉÍÓÚÑüÜ]/.test(n))
+            .map(n => {
+                return n.replace(/[^\x20-\x7E\u00C0-\u024F\u00F1\u00D1\u00FC\u00DC]/g, '');
+            })
+            .filter(n => n.length > 1);
+
+        const MAX = 100;
+        let added = 0;
+        let skipped = 0;
+
+        for (const name of names) {
+            if (this.participants.length >= MAX) break;
+            if (this.participants.includes(name)) {
+                skipped++;
+                continue;
+            }
+            this.participants.push(name);
+            added++;
+        }
+
+        this.renderTags();
+        this.updateUI();
+
+        if (skipped > 0 || added < names.length) {
+            const msg = added + " agregados" +
+                (skipped > 0 ? ", " + skipped + " duplicados" : "") +
+                (names.length > MAX ? ". Maximo " + MAX + " participantes." : "");
+            alert(msg);
+        }
     }
 
     _parseRtf(rtf) {
