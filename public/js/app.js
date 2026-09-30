@@ -704,7 +704,8 @@ class RaffleApp {
                 alert(data.error || 'Error al guardar');
             }
         } catch (err) {
-            alert('Error al conectar con el servidor. Intenta de nuevo.');
+            console.error('Save error:', err);
+            alert('Error al guardar: ' + err.message);
         }
         this.saveBtn.disabled = false;
     }
