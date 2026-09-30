@@ -169,6 +169,8 @@ class RaffleApp {
         this.tagsContainer = document.getElementById('tagsContainer');
         this.emptyMessage = document.getElementById('emptyMessage');
         this.participantCount = document.getElementById('participantCount');
+        this.inputSection = document.getElementById('inputSection');
+        this.participantsSection = document.getElementById('participantsSection');
         this.decreaseBtn = document.getElementById('decreaseBtn');
         this.increaseBtn = document.getElementById('increaseBtn');
         this.winnerCountDisplay = document.getElementById('winnerCount');
@@ -270,7 +272,7 @@ class RaffleApp {
             .split(/[\n\r;]+/)
             .map(n => n.replace(/\\/g, '').trim())
             .filter(n => n.length > 1 && n.length <= 50)
-            .filter(n => /[a-zA-ZáéíóúñÁÉÍÓÚÑüÜ]/.test(n))
+            .filter(n => /[aeiouáéíóú]/i.test(n))
             .map(n => {
                 return n.replace(/[^\x20-\x7E\u00C0-\u024F\u00F1\u00D1\u00FC\u00DC]/g, '');
             })
@@ -302,7 +304,18 @@ class RaffleApp {
     }
 
     _parseRtf(rtf) {
-        let text = rtf.replace(/^\{\\rtf1\\ansi[^}]*\}/, '');
+        let text = rtf;
+
+        let depth = 0;
+        let headerEnd = -1;
+        for (let i = 0; i < text.length - 4; i++) {
+            if (text[i] === '{') depth++;
+            else if (text[i] === '}') {
+                depth--;
+                if (depth === 0) { headerEnd = i + 1; break; }
+            }
+        }
+        if (headerEnd > 0) text = text.substring(headerEnd);
 
         text = text.replace(/\\u(\d+)\?/g, (match, code) => {
             const num = parseInt(code);
@@ -313,18 +326,18 @@ class RaffleApp {
             return String.fromCharCode(parseInt(hex, 16));
         });
 
-        text = text.replace(/\\par[sp]*/g, '\n');
+        text = text.replace(/\\par[d]?[sp]*/g, '\n');
         text = text.replace(/\\line[sp]*/g, '\n');
         text = text.replace(/\\tab[sp]*/g, '\t');
         text = text.replace(/\\space[sp]*/g, ' ');
         text = text.replace(/\\~[sp]*/g, '\u00A0');
-        text = text.replace(/\\-/g, '');
+        text = text.replace(/\\\-/g, '');
         text = text.replace(/\\_/g, '');
 
         text = text.replace(/\\[a-zA-Z]+\d*\s?/g, '');
+        text = text.replace(/\\\d+\s?/g, '');
 
         text = text.replace(/[{}]/g, '');
-
         text = text.replace(/\\/g, '');
 
         text = text.replace(/\n{3,}/g, '\n\n');
@@ -594,6 +607,8 @@ class RaffleApp {
     showWinners(winners) {
         this.resultSection.classList.remove('hidden');
         this.resultWinners.innerHTML = '';
+        this.inputSection.classList.add('hidden');
+        this.participantsSection.classList.add('hidden');
 
         if (winners.length === 1) {
             document.querySelector('.result-title').textContent = 'GANADOR';
@@ -778,6 +793,8 @@ class RaffleApp {
             this.currentRaffleId = raffle.id;
             this.winnerCountDisplay.textContent = this.maxWinners;
             this.raffleNameInput.value = raffle.name;
+            this.inputSection.classList.remove('hidden');
+            this.participantsSection.classList.remove('hidden');
 
             this.renderTags();
             this.updateUI();
@@ -813,6 +830,8 @@ class RaffleApp {
         this.updateUI();
         this.odometerSection.classList.remove('visible');
         this.resultSection.classList.add('hidden');
+        this.inputSection.classList.remove('hidden');
+        this.participantsSection.classList.remove('hidden');
         this.nameInput.focus();
     }
 

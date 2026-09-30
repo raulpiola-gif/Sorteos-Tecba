@@ -898,6 +898,10 @@ body {
     animation: resultReveal 0.6s ease-out;
 }
 
+.hidden {
+    display: none !important;
+}
+
 .result-section.hidden {
     display: none;
 }
