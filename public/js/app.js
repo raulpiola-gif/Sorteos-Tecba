@@ -306,17 +306,6 @@ class RaffleApp {
     _parseRtf(rtf) {
         let text = rtf;
 
-        let depth = 0;
-        let headerEnd = -1;
-        for (let i = 0; i < text.length - 4; i++) {
-            if (text[i] === '{') depth++;
-            else if (text[i] === '}') {
-                depth--;
-                if (depth === 0) { headerEnd = i + 1; break; }
-            }
-        }
-        if (headerEnd > 0) text = text.substring(headerEnd);
-
         text = text.replace(/\\u(\d+)\?/g, (match, code) => {
             const num = parseInt(code);
             return String.fromCharCode(num > 32767 ? num - 65536 : num);
@@ -325,6 +314,15 @@ class RaffleApp {
         text = text.replace(/\\'([0-9a-fA-F]{2})/g, (match, hex) => {
             return String.fromCharCode(parseInt(hex, 16));
         });
+
+        text = this._removeRtfGroup(text, '\\fonttbl');
+        text = this._removeRtfGroup(text, '\\*\\generator');
+        text = this._removeRtfGroup(text, '\\*\\colortbl');
+        text = this._removeRtfGroup(text, '\\*\\stylesheet');
+        text = this._removeRtfGroup(text, '\\*\\listtable');
+        text = this._removeRtfGroup(text, '\\*\\listoverridetable');
+        text = this._removeRtfGroup(text, '\\*\\blipuid');
+        text = this._removeRtfGroup(text, '\\*\\filetbl');
 
         text = text.replace(/\\par[d]?[sp]*/g, '\n');
         text = text.replace(/\\line[sp]*/g, '\n');
@@ -344,6 +342,24 @@ class RaffleApp {
         text = text.replace(/[ \t]+/g, ' ');
 
         return text.trim();
+    }
+
+    _removeRtfGroup(text, groupStart) {
+        const idx = text.indexOf(groupStart);
+        if (idx === -1) return text;
+        let braceStart = idx;
+        while (braceStart > 0 && text[braceStart - 1] !== '{') braceStart--;
+        let depth = 0;
+        for (let i = braceStart; i < text.length; i++) {
+            if (text[i] === '{') depth++;
+            else if (text[i] === '}') {
+                depth--;
+                if (depth === 0) {
+                    return text.substring(0, braceStart) + text.substring(i + 1);
+                }
+            }
+        }
+        return text;
     }
 
     updateMicUI(isRecording) {
