@@ -268,7 +268,7 @@ class RaffleApp {
     _processTextImport(text) {
         const names = text
             .split(/[\n\r;]+/)
-            .map(n => n.trim())
+            .map(n => n.replace(/\\/g, '').trim())
             .filter(n => n.length > 1 && n.length <= 50)
             .filter(n => /[a-zA-ZáéíóúñÁÉÍÓÚÑüÜ]/.test(n))
             .map(n => {
@@ -302,22 +302,17 @@ class RaffleApp {
     }
 
     _parseRtf(rtf) {
-        // Step 1: Remove RTF header
         let text = rtf.replace(/^\{\\rtf1\\ansi[^}]*\}/, '');
 
-        // Step 2: Handle unicode escapes \uN? (where N is decimal, ? is placeholder)
         text = text.replace(/\\u(\d+)\?/g, (match, code) => {
             const num = parseInt(code);
-            // RTF uses signed 16-bit, values > 32767 are negative
             return String.fromCharCode(num > 32767 ? num - 65536 : num);
         });
 
-        // Step 3: Handle hex escapes \'XX
         text = text.replace(/\\'([0-9a-fA-F]{2})/g, (match, hex) => {
             return String.fromCharCode(parseInt(hex, 16));
         });
 
-        // Step 4: Handle special RTF commands
         text = text.replace(/\\par[sp]*/g, '\n');
         text = text.replace(/\\line[sp]*/g, '\n');
         text = text.replace(/\\tab[sp]*/g, '\t');
@@ -326,16 +321,12 @@ class RaffleApp {
         text = text.replace(/\\-/g, '');
         text = text.replace(/\\_/g, '');
 
-        // Step 5: Remove all remaining control words \wordN
         text = text.replace(/\\[a-zA-Z]+\d*\s?/g, '');
 
-        // Step 6: Remove braces
         text = text.replace(/[{}]/g, '');
 
-        // Step 7: Remove single backslashes (remaining artifacts)
-        text = text.replace(/\\\\/g, '\\');
+        text = text.replace(/\\/g, '');
 
-        // Step 8: Clean up whitespace
         text = text.replace(/\n{3,}/g, '\n\n');
         text = text.replace(/[ \t]+/g, ' ');
 
