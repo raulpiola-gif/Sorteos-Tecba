@@ -150,35 +150,36 @@ body {
 
 .header {
     text-align: center;
-    margin-bottom: 28px;
+    margin-bottom: 16px;
 }
 
 .header-logo {
     display: flex;
     justify-content: center;
-    margin-bottom: 12px;
+    margin-bottom: 6px;
 }
 
 .tecba-logo {
-    height: 40px;
+    height: 32px;
     width: auto;
 }
 
 .header h1 {
     font-family: var(--font-heading);
-    font-size: 1.6rem;
+    font-size: 1.3rem;
     font-weight: 700;
     letter-spacing: 2px;
     background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.7) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    margin: 0;
 }
 
 .subtitle {
     color: var(--text-secondary);
-    font-size: 0.9rem;
-    margin-top: 6px;
+    font-size: 0.8rem;
+    margin-top: 4px;
     font-weight: 300;
 }
 
@@ -1062,12 +1063,20 @@ body {
     }
 
     .header h1 {
-        font-size: 1.15rem;
+        font-size: 1rem;
         letter-spacing: 1px;
     }
 
     .subtitle {
-        font-size: 0.8rem;
+        font-size: 0.75rem;
+    }
+
+    .header-logo {
+        margin-bottom: 4px;
+    }
+
+    .tecba-logo {
+        height: 26px;
     }
 
     .glass-card {
@@ -1212,7 +1221,11 @@ body {
 
 @media (max-width: 360px) {
     .header h1 {
-        font-size: 1rem;
+        font-size: 0.9rem;
+    }
+
+    .tecba-logo {
+        height: 22px;
     }
 
     .glass-card {
