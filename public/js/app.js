@@ -448,21 +448,19 @@ class RaffleApp {
         this.participantCount.textContent = count;
 
         if (count >= 2) {
-            this.maxWinners = count;
             this.raffleBtn.disabled = false;
         } else {
-            this.maxWinners = 1;
             this.raffleBtn.disabled = true;
         }
 
-        if (this.maxWinners <= 1) {
+        if (this.maxWinners > count) {
+            this.maxWinners = count;
+        }
+        if (this.maxWinners < 1) {
             this.maxWinners = 1;
         }
 
-        if (this.participants.length === 0) {
-            this.maxWinners = 1;
-        }
-
+        this.winnerCountDisplay.textContent = this.maxWinners;
         this.decreaseBtn.disabled = this.maxWinners <= 1;
         this.increaseBtn.disabled = this.participants.length === 0 || this.maxWinners >= this.participants.length;
 
