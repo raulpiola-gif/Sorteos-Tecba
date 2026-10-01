@@ -71,7 +71,6 @@ class VoiceInput {
         this.onStateChange = onStateChange;
         this.isRecording = false;
         this.processing = false;
-        this.cooldownUntil = 0;
         this.recognition = null;
         this.isSupported = 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window;
     }
@@ -85,43 +84,40 @@ class VoiceInput {
     }
 
     start() {
-        if (!this.isSupported || this.isRecording || this.processing) return;
-        if (Date.now() < this.cooldownUntil) return;
+        if (!this.isSupported || this.isRecording) return;
 
         this.abortPrevious();
 
         const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
         this.recognition = new SR();
         this.recognition.lang = 'es-ES';
-        this.recognition.continuous = false;
+        this.recognition.continuous = true;
         this.recognition.interimResults = false;
         this.recognition.maxAlternatives = 1;
 
-        let resultFired = false;
-
         this.recognition.onresult = (event) => {
-            if (resultFired) return;
-            const result = event.results[0];
-            if (!result || !result.isFinal) return;
-            resultFired = true;
-            this.processing = true;
-            const transcript = result[0].transcript.trim();
-            if (transcript) {
-                this.cooldownUntil = Date.now() + 300;
-                this.onResult(transcript);
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                if (event.results[i].isFinal) {
+                    const transcript = event.results[i][0].transcript.trim();
+                    if (transcript) {
+                        this.onResult(transcript);
+                    }
+                }
             }
         };
 
         this.recognition.onerror = (event) => {
-            if (event.error !== 'no-speech' && event.error !== 'aborted') {
-                console.warn('Speech error:', event.error);
+            if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+                this.stop();
             }
         };
 
         this.recognition.onend = () => {
-            this.isRecording = false;
-            this.onStateChange(false);
-            setTimeout(() => { this.processing = false; }, 300);
+            if (this.isRecording) {
+                try { this.recognition.start(); } catch (e) {}
+            } else {
+                this.onStateChange(false);
+            }
         };
 
         try {
@@ -135,14 +131,16 @@ class VoiceInput {
     }
 
     stop() {
-        if (!this.isRecording) return;
         this.isRecording = false;
         this.onStateChange(false);
-        try { this.recognition.abort(); } catch (e) {}
+        if (this.recognition) {
+            try { this.recognition.onend = null; this.recognition.stop(); } catch (e) {}
+        }
     }
 
     abortPrevious() {
         if (this.recognition) {
+            this.recognition.onend = null;
             try { this.recognition.abort(); } catch (e) {}
             this.recognition = null;
         }
@@ -347,7 +345,7 @@ class RaffleApp {
     updateMicUI(isRecording) {
         if (isRecording) {
             this.micBtn.classList.add('recording');
-            this.micStatus.textContent = 'Habla...';
+            this.micStatus.textContent = 'Escuchando... (di los nombres)';
         } else {
             this.micBtn.classList.remove('recording');
             this.micStatus.textContent = '';
