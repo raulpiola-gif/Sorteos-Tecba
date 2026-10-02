@@ -1,4 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="6" fill="#1D3343"/>
-  <text x="16" y="22" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#009688" text-anchor="middle">ST</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect x="4" y="20" width="12" height="12" rx="3" fill="#F5B400"/>
+  <rect x="4" y="38" width="12" height="12" rx="3" fill="#F5B400"/>
+  <rect x="18" y="38" width="12" height="12" rx="3" fill="#F5B400"/>
+  <rect x="34" y="20" width="12" height="12" rx="3" fill="#7EC8C8"/>
+  <rect x="48" y="20" width="12" height="12" rx="3" fill="#7EC8C8"/>
+  <rect x="48" y="38" width="12" height="12" rx="3" fill="#7EC8C8"/>
 </svg>

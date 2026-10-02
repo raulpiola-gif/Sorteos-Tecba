@@ -1,15 +1,12 @@
-<svg viewBox="0 0 520 220" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- tecBA text -->
-  <text x="0" y="140" font-family="Archivo, sans-serif" font-size="150" font-weight="800" fill="#1D3343" letter-spacing="-4">tecBA</text>
-  
-  <!-- Yellow squares (L shape, bottom-left) -->
-  <rect x="248" y="158" width="28" height="28" rx="5" fill="#FFCD00"/>
-  <rect x="248" y="190" width="28" height="28" rx="5" fill="#FFCD00"/>
-  <rect x="280" y="190" width="28" height="28" rx="5" fill="#FFCD00"/>
-  
-  <!-- Teal squares (top-right pattern) -->
-  <rect x="330" y="158" width="28" height="28" rx="5" fill="#73E6D5"/>
-  <rect x="362" y="158" width="28" height="28" rx="5" fill="#73E6D5"/>
-  <rect x="394" y="158" width="28" height="28" rx="5" fill="#73E6D5"/>
-  <rect x="394" y="190" width="28" height="28" rx="5" fill="#73E6D5"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 100" width="220" height="100">
+  <!-- Yellow squares - left group: 1 top, 2 bottom -->
+  <rect x="10" y="10" width="36" height="36" rx="8" fill="#F5B400"/>
+  <rect x="10" y="54" width="36" height="36" rx="8" fill="#F5B400"/>
+  <rect x="52" y="54" width="36" height="36" rx="8" fill="#F5B400"/>
+
+  <!-- Teal squares - right group: 3 top, 1 bottom (under last) -->
+  <rect x="110" y="10" width="36" height="36" rx="8" fill="#7EC8C8"/>
+  <rect x="152" y="10" width="36" height="36" rx="8" fill="#7EC8C8"/>
+  <rect x="194" y="10" width="36" height="36" rx="8" fill="#7EC8C8"/>
+  <rect x="194" y="54" width="36" height="36" rx="8" fill="#7EC8C8"/>
 </svg>
