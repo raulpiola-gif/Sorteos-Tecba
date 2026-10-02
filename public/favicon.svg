@@ -1,8 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect x="4" y="20" width="12" height="12" rx="3" fill="#F5B400"/>
-  <rect x="4" y="38" width="12" height="12" rx="3" fill="#F5B400"/>
-  <rect x="18" y="38" width="12" height="12" rx="3" fill="#F5B400"/>
-  <rect x="34" y="20" width="12" height="12" rx="3" fill="#7EC8C8"/>
-  <rect x="48" y="20" width="12" height="12" rx="3" fill="#7EC8C8"/>
-  <rect x="48" y="38" width="12" height="12" rx="3" fill="#7EC8C8"/>
+  <rect x="2" y="38" width="14" height="14" rx="3" fill="#F5B400"/>
+  <rect x="2" y="54" width="14" height="14" rx="3" fill="#F5B400"/>
+  <rect x="18" y="54" width="14" height="14" rx="3" fill="#F5B400"/>
+  <rect x="36" y="38" width="14" height="14" rx="3" fill="#7EC8C8"/>
+  <rect x="50" y="38" width="14" height="14" rx="3" fill="#7EC8C8"/>
+  <rect x="50" y="54" width="14" height="14" rx="3" fill="#7EC8C8"/>
+  <text x="6" y="32" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="22" fill="#FFFFFF">tecBA</text>
 </svg>
