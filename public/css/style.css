@@ -156,12 +156,14 @@ body {
 .header-logo {
     display: flex;
     justify-content: center;
-    margin-bottom: 6px;
+    margin-bottom: 12px;
 }
 
 .tecba-logo {
-    height: 32px;
-    width: auto;
+    height: auto;
+    width: 200px;
+    max-width: 80%;
+    border-radius: 12px;
 }
 
 .header h1 {
@@ -1076,11 +1078,11 @@ body {
     }
 
     .header-logo {
-        margin-bottom: 4px;
+        margin-bottom: 8px;
     }
 
     .tecba-logo {
-        height: 26px;
+        width: 160px;
     }
 
     .glass-card {
@@ -1229,7 +1231,7 @@ body {
     }
 
     .tecba-logo {
-        height: 22px;
+        width: 140px;
     }
 
     .glass-card {
