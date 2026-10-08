@@ -6,7 +6,6 @@
     { "src": "api/load.py", "use": "@vercel/python" },
     { "src": "api/list.py", "use": "@vercel/python" },
     { "src": "api/delete.py", "use": "@vercel/python" },
-    { "src": "api/debug.py", "use": "@vercel/python" },
     { "src": "public/**", "use": "@vercel/static" }
   ],
   "routes": [
@@ -15,7 +14,6 @@
     { "src": "/api/load", "dest": "/api/load.py" },
     { "src": "/api/list", "dest": "/api/list.py" },
     { "src": "/api/delete", "dest": "/api/delete.py" },
-    { "src": "/api/debug", "dest": "/api/debug.py" },
     { "src": "/(.*)", "dest": "/public/$1" }
   ]
 }
