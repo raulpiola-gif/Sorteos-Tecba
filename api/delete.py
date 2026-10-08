@@ -9,15 +9,36 @@ BLOB_VERSION = "12"
 INDEX_PATH = "sorteos/index.json"
 
 
-def _blob_token():
-    return os.environ.get("BLOB_READ_WRITE_TOKEN", "")
+def _blob_store_id():
+    sid = os.environ.get("BLOB_STORE_ID", "")
+    if sid.startswith("store_"):
+        sid = sid[len("store_"):]
+    if sid:
+        return sid
+    rw = os.environ.get("BLOB_READ_WRITE_TOKEN", "")
+    parts = rw.split("_")
+    if len(parts) >= 4:
+        return parts[3]
+    return ""
+
+
+def _blob_configured():
+    oidc = os.environ.get("VERCEL_OIDC_TOKEN", "")
+    rw = os.environ.get("BLOB_READ_WRITE_TOKEN", "")
+    return bool((oidc and _blob_store_id()) or rw)
 
 
 def _blob_headers(extra=None):
-    headers = {
-        "authorization": f"Bearer {_blob_token()}",
-        "x-api-version": BLOB_VERSION,
-    }
+    headers = {"x-api-version": BLOB_VERSION}
+    oidc = os.environ.get("VERCEL_OIDC_TOKEN", "")
+    rw = os.environ.get("BLOB_READ_WRITE_TOKEN", "")
+    if oidc and _blob_store_id():
+        headers["authorization"] = f"Bearer {oidc}"
+    elif rw:
+        headers["authorization"] = f"Bearer {rw}"
+    sid = _blob_store_id()
+    if sid:
+        headers["x-vercel-blob-store-id"] = sid
     if extra:
         headers.update(extra)
     return headers
@@ -74,7 +95,7 @@ class handler(BaseHTTPRequestHandler):
             self.wfile.write(json.dumps({"ok": False, "error": "Se requiere un id"}).encode())
             return
 
-        if not _blob_token():
+        if not _blob_configured():
             self.send_response(500)
             self.send_header("Content-Type", "application/json")
             self.send_header("Access-Control-Allow-Origin", "*")
