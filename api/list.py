@@ -1,7 +1,36 @@
 from http.server import BaseHTTPRequestHandler
 import json
 import os
+import urllib.parse
 import urllib.request
+
+BLOB_API = "https://vercel.com/api/blob"
+BLOB_VERSION = "12"
+INDEX_PATH = "sorteos/index.json"
+
+
+def _blob_token():
+    return os.environ.get("BLOB_READ_WRITE_TOKEN", "")
+
+
+def _blob_headers():
+    return {
+        "authorization": f"Bearer {_blob_token()}",
+        "x-api-version": BLOB_VERSION,
+    }
+
+
+def _blob_read_index():
+    """Lee sorteos/index.json. Devuelve [] si no existe todavía."""
+    list_url = BLOB_API + "?prefix=" + urllib.parse.quote(INDEX_PATH, safe="") + "&limit=1"
+    req = urllib.request.Request(list_url, headers=_blob_headers())
+    data = json.loads(urllib.request.urlopen(req, timeout=20).read())
+    blobs = data.get("blobs", [])
+    url = next((b["url"] for b in blobs if b.get("pathname") == INDEX_PATH), None)
+    if not url:
+        return []
+    req2 = urllib.request.Request(url, headers=_blob_headers())
+    return json.loads(urllib.request.urlopen(req2, timeout=20).read())
 
 
 class handler(BaseHTTPRequestHandler):
@@ -11,10 +40,7 @@ class handler(BaseHTTPRequestHandler):
             self.end_headers()
             return
 
-        supabase_url = os.environ.get("SUPABASE_URL")
-        supabase_key = os.environ.get("SUPABASE_ANON_KEY") or os.environ.get("SUPABASE_PUBLISHABLE_KEY")
-
-        if not supabase_url or not supabase_key:
+        if not _blob_token():
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self.send_header("Access-Control-Allow-Origin", "*")
@@ -23,34 +49,24 @@ class handler(BaseHTTPRequestHandler):
             return
 
         try:
-            req = urllib.request.Request(
-                f"{supabase_url}/rest/v1/sorteos?select=id,name,participants,number_of_winners,created_at&order=created_at.desc",
-                headers={
-                    "apikey": supabase_key,
-                    "Authorization": f"Bearer {supabase_key}",
-                },
-            )
-            resp = urllib.request.urlopen(req)
-            rows = json.loads(resp.read())
+            raffles = _blob_read_index()
 
-            raffles = []
-            for r in rows:
-                participants = r.get("participants", "[]")
-                if isinstance(participants, str):
-                    participants = json.loads(participants)
-                raffles.append({
+            summaries = []
+            for r in raffles:
+                participants = r.get("participants", [])
+                summaries.append({
                     "id": r["id"],
                     "name": r["name"],
                     "participantCount": len(participants),
-                    "numberOfWinners": r.get("number_of_winners", 1),
-                    "createdAt": r.get("created_at", 0),
+                    "numberOfWinners": r.get("numberOfWinners", 1),
+                    "createdAt": r.get("createdAt", 0),
                 })
 
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
-            self.wfile.write(json.dumps({"raffles": raffles}).encode())
+            self.wfile.write(json.dumps({"raffles": summaries}).encode())
 
         except Exception as e:
             self.send_response(200)

@@ -1,7 +1,56 @@
 from http.server import BaseHTTPRequestHandler
 import json
 import os
+import urllib.parse
 import urllib.request
+
+BLOB_API = "https://vercel.com/api/blob"
+BLOB_VERSION = "12"
+INDEX_PATH = "sorteos/index.json"
+
+
+def _blob_token():
+    return os.environ.get("BLOB_READ_WRITE_TOKEN", "")
+
+
+def _blob_headers(extra=None):
+    headers = {
+        "authorization": f"Bearer {_blob_token()}",
+        "x-api-version": BLOB_VERSION,
+    }
+    if extra:
+        headers.update(extra)
+    return headers
+
+
+def _blob_read_index():
+    """Lee sorteos/index.json. Devuelve [] si no existe todavía."""
+    list_url = BLOB_API + "?prefix=" + urllib.parse.quote(INDEX_PATH, safe="") + "&limit=1"
+    req = urllib.request.Request(list_url, headers=_blob_headers())
+    data = json.loads(urllib.request.urlopen(req, timeout=20).read())
+    blobs = data.get("blobs", [])
+    url = next((b["url"] for b in blobs if b.get("pathname") == INDEX_PATH), None)
+    if not url:
+        return []
+    req2 = urllib.request.Request(url, headers=_blob_headers())
+    return json.loads(urllib.request.urlopen(req2, timeout=20).read())
+
+
+def _blob_write_index(raffles):
+    raw = json.dumps(raffles).encode()
+    put_url = BLOB_API + "/?pathname=" + urllib.parse.quote(INDEX_PATH, safe="")
+    req = urllib.request.Request(
+        put_url,
+        data=raw,
+        method="PUT",
+        headers=_blob_headers({
+            "x-vercel-blob-access": "private",
+            "x-content-type": "application/json",
+            "x-allow-overwrite": "1",
+            "x-add-random-suffix": "0",
+        }),
+    )
+    urllib.request.urlopen(req, timeout=20).read()
 
 
 class handler(BaseHTTPRequestHandler):
@@ -19,34 +68,24 @@ class handler(BaseHTTPRequestHandler):
 
         if not raffle_id:
             self.send_response(400)
-            self.send_header("Content-Type", "text/plain")
+            self.send_header("Content-Type", "application/json")
             self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
-            self.wfile.write(b"Se requiere un id")
+            self.wfile.write(json.dumps({"ok": False, "error": "Se requiere un id"}).encode())
             return
 
-        supabase_url = os.environ.get("SUPABASE_URL")
-        supabase_key = os.environ.get("SUPABASE_ANON_KEY") or os.environ.get("SUPABASE_PUBLISHABLE_KEY")
-
-        if not supabase_url or not supabase_key:
+        if not _blob_token():
             self.send_response(500)
-            self.send_header("Content-Type", "text/plain")
+            self.send_header("Content-Type", "application/json")
             self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
-            self.wfile.write(b"Supabase no configurado")
+            self.wfile.write(json.dumps({"ok": False, "error": "Blob no configurado"}).encode())
             return
 
         try:
-            req = urllib.request.Request(
-                f"{supabase_url}/rest/v1/sorteos?id=eq.{raffle_id}",
-                headers={
-                    "apikey": supabase_key,
-                    "Authorization": f"Bearer {supabase_key}",
-                    "Content-Type": "application/json",
-                },
-                method="DELETE",
-            )
-            urllib.request.urlopen(req)
+            raffles = _blob_read_index()
+            raffles = [r for r in raffles if r.get("id") != raffle_id]
+            _blob_write_index(raffles)
 
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
@@ -56,10 +95,10 @@ class handler(BaseHTTPRequestHandler):
 
         except Exception as e:
             self.send_response(500)
-            self.send_header("Content-Type", "text/plain")
+            self.send_header("Content-Type", "application/json")
             self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
-            self.wfile.write(f"Error: {str(e)}".encode())
+            self.wfile.write(json.dumps({"ok": False, "error": f"Error: {str(e)}"}).encode())
 
     def do_OPTIONS(self):
         self.send_response(200)
